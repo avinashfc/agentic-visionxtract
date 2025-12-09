@@ -42,7 +42,7 @@ app.add_middleware(
 )
 
 # Auto-discover and load modules
-# ENABLE_MODULES can be: "all", "face_extraction", "ocr", "combined_extraction", or comma-separated
+# ENABLE_MODULES can be: "all", "face_extraction", "ocr", "document_extraction", or comma-separated
 enabled_modules_env = os.getenv("ENABLE_MODULES", "all").lower()
 enabled_modules = {m.strip() for m in enabled_modules_env.split(",") if m.strip()}
 

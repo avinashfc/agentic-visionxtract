@@ -31,6 +31,7 @@ class OCRResponse(BaseModel):
     languages_detected: List[str] = Field(default_factory=list, description="Detected languages")
     processing_time: float = Field(..., description="Processing time in seconds")
     status: str = Field(..., description="Status of the OCR extraction")
+    metadata: Optional[dict] = Field(default_factory=dict, description="Additional metadata (e.g., evaluation results)")
 
 
 class KeyValuePair(BaseModel):
@@ -47,4 +48,5 @@ class KeyValueResponse(BaseModel):
     raw_text: str = Field(..., description="Original OCR text used for extraction")
     processing_time: float = Field(..., description="Processing time in seconds")
     status: str = Field(..., description="Status of the key-value extraction")
+    metadata: Optional[dict] = Field(default_factory=dict, description="Additional metadata (e.g., evaluation results)")
 
