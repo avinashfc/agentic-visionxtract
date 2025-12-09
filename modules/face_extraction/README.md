@@ -99,7 +99,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service-account-key.json
 ```bash
 GOOGLE_API_KEY=your-api-key  # For future Gemini features (not required for face detection)
 GCS_BUCKET_NAME=your-bucket-name  # Optional, for document storage
-GEMINI_MODEL_NAME=gemini-2.0-flash-exp  # Optional
+GEMINI_MODEL_NAME=gemini-2.0-flash-lite  # Optional
 ```
 
 **Note:** Vision API requires service account credentials, not an API key. The `GOOGLE_API_KEY` is reserved for future Gemini model features.

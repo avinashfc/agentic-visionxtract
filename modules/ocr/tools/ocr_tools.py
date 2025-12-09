@@ -22,15 +22,17 @@ class OCRTools:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-exp"
+        model_name: Optional[str] = None
     ):
         """
         Initialize OCR tools.
         
         Args:
             api_key: Optional API key for Vision API and Gemini
-            model_name: Gemini model name for key-value extraction
+            model_name: Gemini model name for key-value extraction (must be provided)
         """
+        if not model_name:
+            raise ValueError("model_name must be provided. Configure it in config.yaml or pass it explicitly.")
         self.ocr_detector = OCRDetector(api_key=api_key)
         self.api_key = api_key
         self.model_name = model_name

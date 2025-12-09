@@ -1,0 +1,32 @@
+module:
+  name: ocr
+  version: "1.0.0"
+  description: "OCR and key-value extraction module"
+
+agent:
+  app_name: agents
+  name: ocr_agent
+  description: "Agent for extracting key-value pairs from documents using OCR and LLM"
+  model: gemini-2.0-flash-lite
+
+task:
+  steps:
+    - validate_document
+    - upload_document
+    - extract_text
+    - extract_key_value_pairs
+  prompt_template: |
+    Extract key-value pairs from the uploaded document image.
+
+    Task parameters:
+    - Document name: {document_name}
+    - Language hints: {language_hints_json}
+
+    You MUST execute ALL of these steps in order:
+    {ordered_steps}
+
+    IMPORTANT: The file content is available in the tool execution context.
+    After calling extract_text, the extracted text will be available in the context.
+    After calling extract_key_value_pairs, the key-value pairs will be available in the context.
+    You must complete ALL steps to finish the task.
+

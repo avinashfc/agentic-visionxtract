@@ -3,7 +3,7 @@ Workflow for document extraction using Google ADK.
 This module orchestrates communication with face extraction and OCR agents.
 """
 import time
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from modules.face_extraction.workflows.face_extraction_workflow import FaceExtractionWorkflow
 from modules.ocr.workflows.ocr_workflow import OCRWorkflow
 from modules.document_extraction.models.document_extraction import DocumentExtractionResponse
@@ -21,7 +21,7 @@ class DocumentExtractionWorkflow:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-exp"
+        model_name: Optional[str] = None
     ):
         """
         Initialize document extraction workflow using ADK agentic flow.
@@ -48,7 +48,10 @@ class DocumentExtractionWorkflow:
         min_confidence: float = 0.7,
         extract_all_faces: bool = True,
         language_hints: Optional[List[str]] = None,
-        extraction_prompt: Optional[str] = None
+        extraction_prompt: Optional[str] = None,
+        evaluate_with_judge: bool = False,
+        judge_criteria: Optional[List[Dict[str, Any]]] = None,
+        judge_task_description: Optional[str] = None
     ) -> DocumentExtractionResponse:
         """
         Execute the document extraction workflow: face extraction and key-value extraction.
@@ -64,9 +67,12 @@ class DocumentExtractionWorkflow:
             extract_all_faces: Whether to extract all faces
             language_hints: Optional list of language codes to help OCR detection
             extraction_prompt: Optional custom prompt for key-value extraction
+            evaluate_with_judge: Whether to evaluate extraction results using LLM Judge module
+            judge_criteria: Optional custom criteria for evaluation
+            judge_task_description: Optional task description for judge
             
         Returns:
-            DocumentExtractionResponse with all extraction results
+            DocumentExtractionResponse with all extraction results (with evaluation added if evaluate_with_judge=True)
         """
         start_time = time.time()
         
@@ -76,7 +82,10 @@ class DocumentExtractionWorkflow:
             file_content=file_content,
             document_name=document_name,
             min_confidence=min_confidence,
-            extract_all_faces=extract_all_faces
+            extract_all_faces=extract_all_faces,
+            evaluate_with_judge=evaluate_with_judge,
+            judge_criteria=judge_criteria,
+            judge_task_description=judge_task_description
         )
         face_extraction_time = time.time() - face_start_time
         
@@ -90,7 +99,10 @@ class DocumentExtractionWorkflow:
             file_content=file_content,
             document_name=document_name,
             language_hints=language_hints,
-            extraction_prompt=extraction_prompt
+            extraction_prompt=extraction_prompt,
+            evaluate_with_judge=evaluate_with_judge,
+            judge_criteria=judge_criteria,
+            judge_task_description=judge_task_description
         )
         key_value_extraction_time = time.time() - kv_start_time
         key_value_pairs = kv_response.key_value_pairs
@@ -115,6 +127,14 @@ class DocumentExtractionWorkflow:
         if kv_response and hasattr(kv_response, 'document_id'):
             document_id = document_id or kv_response.document_id
         
+        # Collect metadata from both responses if judge evaluation was performed
+        metadata = {}
+        if evaluate_with_judge:
+            if hasattr(face_response, 'metadata') and face_response.metadata:
+                metadata['face_extraction_evaluation'] = face_response.metadata.get('evaluation')
+            if hasattr(kv_response, 'metadata') and kv_response.metadata:
+                metadata['ocr_evaluation'] = kv_response.metadata.get('evaluation')
+        
         return DocumentExtractionResponse(
             document_id=document_id,
             faces_detected=face_response.faces_detected,
@@ -124,5 +144,6 @@ class DocumentExtractionWorkflow:
             processing_time=total_time,
             face_extraction_time=face_extraction_time,
             key_value_extraction_time=key_value_extraction_time,
-            status=status
+            status=status,
+            metadata=metadata if metadata else None
         )

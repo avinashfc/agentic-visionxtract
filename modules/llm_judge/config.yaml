@@ -4,38 +4,27 @@ module:
   version: "1.0.0"
   description: "LLM-based judge for evaluating, scoring, and comparing content outputs"
 
-agents:
-  judge_agent:
-    enabled: true
-    model: "gemini-2.0-flash-exp"
-    api_key_env: "GOOGLE_API_KEY"
-    
-tools:
-  judge_tools:
-    enabled: true
-    default_temperature: 0.3  # Lower temperature for consistent judging
-    
-workflows:
-  evaluation:
-    enabled: true
-    default_criteria:
-      - name: accuracy
-        weight: 0.3
-        description: "Factual accuracy and correctness"
-      - name: relevance
-        weight: 0.25
-        description: "Relevance to the task"
-      - name: completeness
-        weight: 0.2
-        description: "Completeness of the response"
-      - name: clarity
-        weight: 0.15
-        description: "Clarity and coherence"
-      - name: quality
-        weight: 0.1
-        description: "Overall quality"
-  
-  comparison:
-    enabled: true
-    default_rank: true
+agent:
+  app_name: "agents"  # Must match ADK root agent app name
+  name: "judge_agent"
+  description: "Agent for evaluating and judging content using LLM with structured criteria"
+  model: "gemini-2.0-flash-lite"
 
+task:
+  # Task configuration for judge agent
+  default_criteria:
+    - name: accuracy
+      weight: 0.3
+      description: "Factual accuracy and correctness"
+    - name: relevance
+      weight: 0.25
+      description: "Relevance to the task"
+    - name: completeness
+      weight: 0.2
+      description: "Completeness of the response"
+    - name: clarity
+      weight: 0.15
+      description: "Clarity and coherence"
+    - name: quality
+      weight: 0.1
+      description: "Overall quality"

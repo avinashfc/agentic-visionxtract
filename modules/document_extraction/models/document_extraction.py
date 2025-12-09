@@ -2,7 +2,7 @@
 Pydantic models for document extraction pipeline.
 """
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from modules.ocr.models.ocr import TextBlock, KeyValuePair
 
 
@@ -20,3 +20,4 @@ class DocumentExtractionResponse(BaseModel):
     ocr_time: Optional[float] = Field(None, description="OCR processing time")
     key_value_extraction_time: Optional[float] = Field(None, description="Key-value extraction processing time")
     status: str = Field(..., description="Overall status of the extraction")
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata (e.g., evaluation results)")

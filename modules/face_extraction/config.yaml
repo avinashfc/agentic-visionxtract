@@ -1,6 +1,32 @@
-# Face Extraction module configuration
 module:
   name: face_extraction
   version: "1.0.0"
   description: "Face extraction from documents using Google ADK and Vision API"
+
+agent:
+  app_name: agents
+  name: face_extraction_agent
+  description: "Agent for extracting faces from uploaded documents using Vision API"
+  model: gemini-2.0-flash-lite
+
+task:
+  steps:
+    - validate_document
+    - upload_document
+    - detect_faces
+    - extract_face_images
+  prompt_template: |
+    Extract faces from the uploaded document image and return the extracted face images.
+
+    Task parameters:
+    - Document name: {document_name}
+    - Minimum confidence threshold: {min_confidence}
+    - Extract all faces: {extract_all_faces}
+
+    You MUST execute ALL of these steps in order:
+    {ordered_steps}
+
+    IMPORTANT: The file content is available in the tool execution context - you do not need to pass it as a parameter.
+    After calling extract_face_images, the extracted faces will be available in the context.
+    You must complete ALL 4 steps to finish the task.
 

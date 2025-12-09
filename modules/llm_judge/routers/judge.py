@@ -31,7 +31,7 @@ def get_workflow() -> JudgeWorkflow:
     global _workflow
     if _workflow is None:
         api_key = os.getenv("GOOGLE_API_KEY")
-        model_name = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash-exp")
+        model_name = os.getenv("GEMINI_MODEL_NAME")  # Optional override, config.yaml is primary source
         _workflow = JudgeWorkflow(
             api_key=api_key,
             model_name=model_name

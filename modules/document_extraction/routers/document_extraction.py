@@ -5,8 +5,8 @@ This module orchestrates communication with face extraction and OCR agents.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from typing import Optional
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
+from typing import Optional, List, Dict, Any
 from modules.document_extraction.workflows.document_extraction_workflow import DocumentExtractionWorkflow
 from modules.document_extraction.models.document_extraction import DocumentExtractionResponse
 
@@ -27,7 +27,7 @@ def get_workflow() -> DocumentExtractionWorkflow:
     global _workflow
     if _workflow is None:
         api_key = os.getenv("GOOGLE_API_KEY")
-        model_name = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash-exp")
+        model_name = os.getenv("GEMINI_MODEL_NAME")  # Optional override, config.yaml is primary source
         _workflow = DocumentExtractionWorkflow(
             api_key=api_key,
             model_name=model_name
@@ -42,6 +42,7 @@ async def extract_all_from_document(
     extract_all_faces: bool = True,
     language_hints: Optional[str] = None,  # Comma-separated language codes
     extraction_prompt: Optional[str] = None,  # Custom prompt for key-value extraction
+    evaluate_with_judge: bool = Query(False, description="Whether to evaluate extraction results using LLM Judge"),
     workflow: DocumentExtractionWorkflow = Depends(get_workflow)
 ):
     """
@@ -58,9 +59,10 @@ async def extract_all_from_document(
         extract_all_faces: Whether to extract all faces or just the first (default: True)
         language_hints: Optional comma-separated language codes (e.g., "en,es,fr")
         extraction_prompt: Optional custom prompt for key-value extraction
+        evaluate_with_judge: Whether to evaluate extraction results using LLM Judge module
         
     Returns:
-        DocumentExtractionResponse with faces, OCR text, and key-value pairs
+        DocumentExtractionResponse with faces, OCR text, and key-value pairs (with evaluation added if evaluate_with_judge=True)
     """
     try:
         file_content = await file.read()
@@ -83,7 +85,8 @@ async def extract_all_from_document(
             min_confidence=min_confidence,
             extract_all_faces=extract_all_faces,
             language_hints=language_list,
-            extraction_prompt=extraction_prompt
+            extraction_prompt=extraction_prompt,
+            evaluate_with_judge=evaluate_with_judge
         )
         
         return response

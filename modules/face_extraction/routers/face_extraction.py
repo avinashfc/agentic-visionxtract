@@ -4,8 +4,8 @@ API router for face extraction endpoints.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from typing import Optional
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
+from typing import Optional, List, Dict, Any
 from modules.face_extraction.workflows.face_extraction_workflow import FaceExtractionWorkflow
 from modules.face_extraction.models.face_extraction import FaceExtractionResponse
 
@@ -26,7 +26,7 @@ def get_workflow() -> FaceExtractionWorkflow:
     global _workflow
     if _workflow is None:
         api_key = os.getenv("GOOGLE_API_KEY")
-        model_name = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash-exp")
+        model_name = os.getenv("GEMINI_MODEL_NAME")  # Optional override, config.yaml is primary source
         _workflow = FaceExtractionWorkflow(
             api_key=api_key,
             model_name=model_name
@@ -39,6 +39,7 @@ async def extract_faces_from_document(
     file: UploadFile = File(..., description="Document image file"),
     min_confidence: float = 0.3,  # Lower default threshold for better detection
     extract_all_faces: bool = True,
+    evaluate_with_judge: bool = Query(False, description="Whether to evaluate face extraction result using LLM Judge"),
     workflow: FaceExtractionWorkflow = Depends(get_workflow)
 ):
     """
@@ -48,9 +49,10 @@ async def extract_faces_from_document(
         file: Uploaded document file
         min_confidence: Minimum confidence threshold (0.0-1.0)
         extract_all_faces: Whether to extract all faces or just the first
+        evaluate_with_judge: Whether to evaluate face extraction result using LLM Judge module
         
     Returns:
-        FaceExtractionResponse with extracted faces
+        FaceExtractionResponse with extracted faces (with evaluation added if evaluate_with_judge=True)
     """
     try:
         # Read file content
@@ -69,7 +71,8 @@ async def extract_faces_from_document(
             file_content=file_content,
             document_name=file.filename or "unknown",
             min_confidence=min_confidence,
-            extract_all_faces=extract_all_faces
+            extract_all_faces=extract_all_faces,
+            evaluate_with_judge=evaluate_with_judge
         )
         
         # Pydantic will automatically serialize image_data to base64 via field_serializer

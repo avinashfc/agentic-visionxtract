@@ -26,15 +26,17 @@ class JudgeTools:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-exp"
+        model_name: Optional[str] = None
     ):
         """
         Initialize judge tools.
         
         Args:
             api_key: Google API key for Gemini
-            model_name: Gemini model name to use
+            model_name: Gemini model name to use (must be provided)
         """
+        if not model_name:
+            raise ValueError("model_name must be provided. Configure it in config.yaml or pass it explicitly.")
         self.api_key = api_key
         self.model_name = model_name
         self.genai_client = None

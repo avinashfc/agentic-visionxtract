@@ -3,7 +3,7 @@ Pydantic models for face extraction pipeline.
 """
 import base64
 from pydantic import BaseModel, Field, field_serializer
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 
@@ -45,4 +45,5 @@ class FaceExtractionResponse(BaseModel):
     faces_extracted: List[ExtractedFace] = Field(..., description="List of extracted faces")
     processing_time: float = Field(..., description="Processing time in seconds")
     status: str = Field(..., description="Status of the extraction")
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata (e.g., evaluation results)")
 

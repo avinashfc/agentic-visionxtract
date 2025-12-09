@@ -1,14 +1,20 @@
 """
 Workflow for LLM judge evaluation and comparison.
 """
+import logging
 from typing import Optional, List, Dict, Any
+from google.adk import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from modules.llm_judge.agents.judge_agent import JudgeAgent
 from modules.llm_judge.models.judge import (
     JudgeRequest,
     JudgeResponse,
     ComparisonRequest,
-    ComparisonResponse
+    ComparisonResponse,
+    EvaluationCriteria
 )
+
+logger = logging.getLogger(__name__)
 
 
 class JudgeWorkflow:
@@ -19,18 +25,24 @@ class JudgeWorkflow:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-exp"
+        model_name: Optional[str] = None
     ):
         """
         Initialize judge workflow.
         
         Args:
             api_key: Google API key
-            model_name: Gemini model name
+            model_name: Gemini model name (overrides config if provided)
         """
         self.agent = JudgeAgent(
             api_key=api_key,
             model_name=model_name
+        )
+        # Runner is owned by workflow for scalability/reuse
+        self.runner = Runner(
+            app_name=self.agent.app_name,
+            agent=self.agent.agent,
+            session_service=InMemorySessionService()
         )
     
     async def execute(
@@ -54,8 +66,6 @@ class JudgeWorkflow:
         Returns:
             JudgeResponse with evaluation results
         """
-        from modules.llm_judge.models.judge import EvaluationCriteria
-        
         # Convert criteria dicts to EvaluationCriteria objects if provided
         criteria_objs = None
         if criteria:
@@ -72,7 +82,14 @@ class JudgeWorkflow:
             context=context
         )
         
-        return await self.agent.evaluate(request)
+        # Call tools directly (tools handle LLM calls)
+        return await self.agent.tools.evaluate(
+            content=request.content,
+            criteria=request.criteria,
+            reference=request.reference,
+            task_description=request.task_description,
+            context=request.context
+        )
     
     async def execute_comparison(
         self,
@@ -93,8 +110,6 @@ class JudgeWorkflow:
         Returns:
             ComparisonResponse with comparison results
         """
-        from modules.llm_judge.models.judge import EvaluationCriteria
-        
         # Convert criteria dicts to EvaluationCriteria objects if provided
         criteria_objs = None
         if criteria:
@@ -110,5 +125,10 @@ class JudgeWorkflow:
             rank=rank
         )
         
-        return await self.agent.compare(request)
-
+        # Call tools directly (tools handle LLM calls)
+        return await self.agent.tools.compare(
+            outputs=request.outputs,
+            criteria=request.criteria,
+            task_description=request.task_description,
+            rank=request.rank
+        )

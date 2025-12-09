@@ -26,7 +26,7 @@ def get_ocr_workflow() -> OCRWorkflow:
     global _ocr_workflow
     if _ocr_workflow is None:
         api_key = os.getenv("GOOGLE_API_KEY")
-        model_name = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash-exp")
+        model_name = os.getenv("GEMINI_MODEL_NAME")  # Optional override, config.yaml is primary source
         _ocr_workflow = OCRWorkflow(
             api_key=api_key,
             model_name=model_name

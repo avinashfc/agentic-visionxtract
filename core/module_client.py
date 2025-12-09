@@ -156,7 +156,7 @@ class ModuleClient:
         
         # Initialize workflow with API key
         api_key = os.getenv("GOOGLE_API_KEY")
-        model_name = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash-exp")
+        model_name = os.getenv("GEMINI_MODEL_NAME")  # Optional override, config.yaml is primary source
         
         return workflow_class(api_key=api_key, model_name=model_name)
     
