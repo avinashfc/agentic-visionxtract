@@ -1,0 +1,13 @@
+google-genai
+google-generativeai
+protobuf
+fastapi==0.104.1
+uvicorn==0.24.0
+pillow==10.1.0
+numpy==1.26.4
+PyMuPDF==1.23.8
+opencv-python==4.8.1.78
+crewai
+python-dotenv
+pyyaml
+python-multipart
